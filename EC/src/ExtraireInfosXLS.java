@@ -269,6 +269,9 @@ public class ExtraireInfosXLS {
 		Cohorte cohorte = new Cohorte(new HashMap<String, Eleve>());
 		for (Eleve eleve : mapElevesInscrits.values()){
 			if (eleve.semaineInscription == numSemaine && eleve.dernierHWReussi == dernieHWReussi){
+				if (cohorte==null){
+					cohorte = new Cohorte(new HashMap<String, Eleve>());
+				}
 				cohorte.mapElevesCohorte.put(eleve.login, eleve);
 			}
 		}
@@ -286,13 +289,10 @@ public class ExtraireInfosXLS {
 			}
 			tabCohortes = new Cohorte[nbMaxSemaine][nbMaxHWReussis+1];//on peut réussir 0 HW
 			//on remplit les cohortes du tableau
-			for (Eleve eleve : mapElevesInscrits.values()){
-				Cohorte cohorte = tabCohortes[eleve.semaineInscription-1][eleve.dernierHWReussi];
-				if (cohorte==null){
-					cohorte = new Cohorte(new HashMap<String, Eleve>());
+			for (int semaine=0; semaine<tabCohortes.length; semaine++){
+				for (int homework=0; homework<tabCohortes[semaine].length; homework++){
+					tabCohortes[semaine][homework] = cohorte(semaine+1, homework);
 				}
-				cohorte.mapElevesCohorte.put(eleve.login, eleve);
-				tabCohortes[eleve.semaineInscription-1][eleve.dernierHWReussi] = cohorte;
 			}
 		}
 	}
