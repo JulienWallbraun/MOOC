@@ -14,35 +14,10 @@ public class ExtraireInfosXLS {
 	int INDICE_COLONNE_PREMIER_HW = 4;
 	int INDICE_COLONNE_DERNIER_HW = 33;
 	
-	private ArrayList<Sheet> listeSheets = new ArrayList<Sheet>();
-	private Workbook workbook;
-	private HashMap<String, Eleve> mapElevesInscrits = new HashMap<String, Eleve>();
-	private int[][] tabPopulationCohortes;
-	private Cohorte[][] tabCohortes;
-
-	public HashMap<String, Eleve> getListeElevesInscrits() {
-		return mapElevesInscrits;
-	}
-
-	public void setListeElevesInscrits(HashMap<String, Eleve> listeElevesInscrits) {
-		this.mapElevesInscrits = listeElevesInscrits;
-	}
-
-	public Workbook getWorkbook() {
-		return workbook;
-	}
-
-	public void setWorkbook(Workbook workbook) {
-		this.workbook = workbook;
-	}
-
-	public ArrayList<Sheet> getListeSheets() {
-		return listeSheets;
-	}
-
-	public void setListeSheets(ArrayList<Sheet> listeSheets) {
-		this.listeSheets = listeSheets;
-	}
+	ArrayList<Sheet> listeSheets = new ArrayList<Sheet>();
+	Workbook workbook;
+	HashMap<String, Eleve> mapElevesInscrits = new HashMap<String, Eleve>();
+	Cohorte[][] tabCohortes;
 
 	public ExtraireInfosXLS(File file) throws BiffException, IOException {
 		super();
@@ -178,12 +153,10 @@ public class ExtraireInfosXLS {
 	public void ajouterDernierHWReussiELeves(int derniereSemaineEtudiee){
 		int semaine = derniereSemaineEtudiee;
 		int nbElevesAvecDernierHWReussiTrouve = 0;
-		boolean stop = nbElevesAvecDernierHWReussiTrouve<mapElevesInscrits.size();
-		
-		
+		boolean stop = nbElevesAvecDernierHWReussiTrouve<mapElevesInscrits.size();		
 		
 		//cas derniere semaine
-		Sheet sheetDerniereSemaine = getListeSheets().get(derniereSemaineEtudiee);
+		Sheet sheetDerniereSemaine = listeSheets.get(derniereSemaineEtudiee);
 		for (int i=INDICE_LIGNE_PREMIER_ELEVE; i<sheetDerniereSemaine.getColumn(INDICE_COLONNE_LOGIN+1).length; i++){
 			String loginEleve = sheetDerniereSemaine.getCell(INDICE_COLONNE_LOGIN+1, i).getContents();
 			if (mapElevesInscrits.get(loginEleve).dernierHWReussi == -1){
@@ -196,7 +169,7 @@ public class ExtraireInfosXLS {
 		semaine--;
 		//cas semaines normales
 		while(semaine>=1){
-			Sheet sheetSemaine = getListeSheets().get(semaine);
+			Sheet sheetSemaine = listeSheets.get(semaine);
 			for (int i=INDICE_LIGNE_PREMIER_ELEVE; i<sheetSemaine.getColumn(INDICE_COLONNE_LOGIN).length; i++){
 				String loginEleve = sheetSemaine.getCell(INDICE_COLONNE_LOGIN, i).getContents();
 				if (mapElevesInscrits.get(loginEleve).dernierHWReussi == -1){
@@ -215,32 +188,6 @@ public class ExtraireInfosXLS {
 		if (!mapElevesInscrits.isEmpty()){
 			for (Eleve eleve : mapElevesInscrits.values()){
 				System.out.println(eleve.login+" "+eleve.semaineInscription+" "+eleve.dernierHWReussi);
-			}
-		}
-	}
-	
-//	public void remplirTabPopulationCohortes(){
-//		if (!mapElevesInscrits.isEmpty()){
-//			//on détermine les dimensions du tableau
-//			int nbMaxSemaine = 0;
-//			int nbMaxHWReussis = 0;
-//			for (Eleve eleve : mapElevesInscrits.values()){
-//				if (eleve.semaineInscription > nbMaxSemaine) nbMaxSemaine = eleve.semaineInscription;
-//				if (eleve.dernierHWReussi > nbMaxHWReussis) nbMaxHWReussis = eleve.dernierHWReussi;
-//			}
-//			tabPopulationCohortes = new int[nbMaxSemaine][nbMaxHWReussis+1];//on peut réussir 0 HW
-//			//on remplit le tableau
-//			for (Eleve eleve : mapElevesInscrits.values()){
-//				tabPopulationCohortes[eleve.semaineInscription-1][eleve.dernierHWReussi]++;
-//			}
-//		}
-//	}
-	
-	public void afficherTabPopulationCohortes(){
-		System.out.println("détail de tabPopulationCohortes");
-		for (int i=0; i<tabPopulationCohortes.length; i++){
-			for (int j=0; j<tabPopulationCohortes[i].length; j++){
-				System.out.println("tabPopulationCohortes(semaine d'inscription = "+(i+1)+", dernier HW réussi = "+j+") = "+tabPopulationCohortes[i][j]);
 			}
 		}
 	}
