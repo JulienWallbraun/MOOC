@@ -18,6 +18,7 @@ public class ExtraireInfosXLS {
 	private Workbook workbook;
 	private HashMap<String, Eleve> mapElevesInscrits = new HashMap<String, Eleve>();
 	private int[][] tabPopulationCohortes;
+	private Cohorte[][] tabCohortes;
 
 	public HashMap<String, Eleve> getListeElevesInscrits() {
 		return mapElevesInscrits;
@@ -218,7 +219,63 @@ public class ExtraireInfosXLS {
 		}
 	}
 	
-	public void remplirTabPopulationCohortes(){
+//	public void remplirTabPopulationCohortes(){
+//		if (!mapElevesInscrits.isEmpty()){
+//			//on détermine les dimensions du tableau
+//			int nbMaxSemaine = 0;
+//			int nbMaxHWReussis = 0;
+//			for (Eleve eleve : mapElevesInscrits.values()){
+//				if (eleve.semaineInscription > nbMaxSemaine) nbMaxSemaine = eleve.semaineInscription;
+//				if (eleve.dernierHWReussi > nbMaxHWReussis) nbMaxHWReussis = eleve.dernierHWReussi;
+//			}
+//			tabPopulationCohortes = new int[nbMaxSemaine][nbMaxHWReussis+1];//on peut réussir 0 HW
+//			//on remplit le tableau
+//			for (Eleve eleve : mapElevesInscrits.values()){
+//				tabPopulationCohortes[eleve.semaineInscription-1][eleve.dernierHWReussi]++;
+//			}
+//		}
+//	}
+	
+	public void afficherTabPopulationCohortes(){
+		System.out.println("détail de tabPopulationCohortes");
+		for (int i=0; i<tabPopulationCohortes.length; i++){
+			for (int j=0; j<tabPopulationCohortes[i].length; j++){
+				System.out.println("tabPopulationCohortes(semaine d'inscription = "+(i+1)+", dernier HW réussi = "+j+") = "+tabPopulationCohortes[i][j]);
+			}
+		}
+	}
+	
+	public HashMap<String, Eleve> mapElevesInscritsSemaine(int numSemaine){
+		HashMap<String, Eleve> mapElevesInscritsSemaine = new HashMap<String, Eleve>();
+		for (Eleve eleve : mapElevesInscrits.values()){
+			if (eleve.semaineInscription == numSemaine){
+				mapElevesInscritsSemaine.put(eleve.login, eleve);
+			}
+		}
+		return mapElevesInscritsSemaine;
+	}
+	
+	public HashMap<String, Eleve> mapElevesDernierHWReussi(int dernieHWReussi){
+		HashMap<String, Eleve> mapElevesDernierHWReussi = new HashMap<String, Eleve>();
+		for (Eleve eleve : mapElevesInscrits.values()){
+			if (eleve.dernierHWReussi == dernieHWReussi){
+				mapElevesDernierHWReussi.put(eleve.login, eleve);
+			}
+		}
+		return mapElevesDernierHWReussi;
+	}
+	
+	public Cohorte cohorte(int numSemaine, int dernieHWReussi){
+		Cohorte cohorte = new Cohorte(new HashMap<String, Eleve>());
+		for (Eleve eleve : mapElevesInscrits.values()){
+			if (eleve.semaineInscription == numSemaine && eleve.dernierHWReussi == dernieHWReussi){
+				cohorte.mapElevesCohorte.put(eleve.login, eleve);
+			}
+		}
+		return cohorte;
+	}
+	
+	public void rangerElevesInscritsDansCohortes(){
 		if (!mapElevesInscrits.isEmpty()){
 			//on détermine les dimensions du tableau
 			int nbMaxSemaine = 0;
@@ -227,19 +284,28 @@ public class ExtraireInfosXLS {
 				if (eleve.semaineInscription > nbMaxSemaine) nbMaxSemaine = eleve.semaineInscription;
 				if (eleve.dernierHWReussi > nbMaxHWReussis) nbMaxHWReussis = eleve.dernierHWReussi;
 			}
-			tabPopulationCohortes = new int[nbMaxSemaine][nbMaxHWReussis+1];//on peut réussir 0 HW
-			//on remplit le tableau
+			tabCohortes = new Cohorte[nbMaxSemaine][nbMaxHWReussis+1];//on peut réussir 0 HW
+			//on remplit les cohortes du tableau
 			for (Eleve eleve : mapElevesInscrits.values()){
-				tabPopulationCohortes[eleve.semaineInscription-1][eleve.dernierHWReussi]++;
+				Cohorte cohorte = tabCohortes[eleve.semaineInscription-1][eleve.dernierHWReussi];
+				if (cohorte==null){
+					cohorte = new Cohorte(new HashMap<String, Eleve>());
+				}
+				cohorte.mapElevesCohorte.put(eleve.login, eleve);
+				tabCohortes[eleve.semaineInscription-1][eleve.dernierHWReussi] = cohorte;
 			}
 		}
 	}
 	
-	public void afficherTabPopulationCohortes(){
-		System.out.println("détail de tabPopulationCohortes");
-		for (int i=0; i<tabPopulationCohortes.length; i++){
-			for (int j=0; j<tabPopulationCohortes[i].length; j++){
-				System.out.println("tabPopulationCohortes(semaine d'inscription = "+(i+1)+", dernier HW réussi = "+j+") = "+tabPopulationCohortes[i][j]);
+	public void afficherTabCohortes(){
+		System.out.println("détail tableau cohortes");
+		for (int i=0; i<tabCohortes.length; i++){
+			for (int j=0; j<tabCohortes[i].length; j++){
+				if (tabCohortes[i][j] != null){
+					for (Eleve eleve : tabCohortes[i][j].mapElevesCohorte.values()){
+						System.out.println("cohorte(semaine="+(i+1)+",dernierHWReussi="+j+") : "+eleve.login+" "+eleve.semaineInscription+" "+eleve.dernierHWReussi);
+					}
+				}
 			}
 		}
 	}

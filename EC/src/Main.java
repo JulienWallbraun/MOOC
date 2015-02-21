@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
@@ -19,9 +20,11 @@ public class Main {
 			EIXLS.ajouterDernierHWReussiELeves(10);
 //			System.out.println(EIXLS.dernierHWReussi(EIXLS.getWorkbook().getSheet(10), "Peahi", true));
 			
-			EIXLS.afficherMapEleves();
-			EIXLS.remplirTabPopulationCohortes();
-			EIXLS.afficherTabPopulationCohortes();
+//			EIXLS.afficherMapEleves();
+			EIXLS.rangerElevesInscritsDansCohortes();
+			EIXLS.afficherTabCohortes();
+//			EIXLS.remplirTabPopulationCohortes();
+//			EIXLS.afficherTabPopulationCohortes();
 			
 			
 //			for (int i=5000; i>=4500; i--){
