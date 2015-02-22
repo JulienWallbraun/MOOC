@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import jxl.Sheet;
 import jxl.Workbook;
-import jxl.WorkbookSettings;
 import jxl.read.biff.BiffException;
 
 public class ExtraireInfosXLS {
