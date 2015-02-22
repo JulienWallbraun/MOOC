@@ -1,10 +1,12 @@
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import jxl.Sheet;
 import jxl.Workbook;
+import jxl.WorkbookSettings;
 import jxl.read.biff.BiffException;
 
 public class ExtraireInfosXLS {
@@ -153,7 +155,6 @@ public class ExtraireInfosXLS {
 	public void ajouterDernierHWReussiELeves(int derniereSemaineEtudiee){
 		int semaine = derniereSemaineEtudiee;
 		int nbElevesAvecDernierHWReussiTrouve = 0;
-		boolean stop = nbElevesAvecDernierHWReussiTrouve<mapElevesInscrits.size();		
 		
 		//cas derniere semaine
 		Sheet sheetDerniereSemaine = listeSheets.get(derniereSemaineEtudiee);
@@ -168,7 +169,7 @@ public class ExtraireInfosXLS {
 		}
 		semaine--;
 		//cas semaines normales
-		while(semaine>=1){
+		while(semaine>=1 && nbElevesAvecDernierHWReussiTrouve<=mapElevesInscrits.size()){
 			Sheet sheetSemaine = listeSheets.get(semaine);
 			for (int i=INDICE_LIGNE_PREMIER_ELEVE; i<sheetSemaine.getColumn(INDICE_COLONNE_LOGIN).length; i++){
 				String loginEleve = sheetSemaine.getCell(INDICE_COLONNE_LOGIN, i).getContents();
@@ -255,5 +256,25 @@ public class ExtraireInfosXLS {
 				}
 			}
 		}
+	}
+	
+	public void creerCSV(String path, String name) throws IOException{
+		int nbSemaines = tabCohortes.length;
+		int nbMaxHWReussis = tabCohortes[0].length;
+		String newLine = System.getProperty("line.separator");
+		FileWriter fileWriter = new FileWriter(path+File.separator+name);
+		//création 1ère ligne (titres colonnes)
+		fileWriter.append("TDs");
+		for (int i=1; i<=nbSemaines; i++){
+			fileWriter.append("\t"+"Semaine"+Integer.toString(i));
+		}		
+		//création autres lignes (données)
+		for (int i=0; i< nbMaxHWReussis; i++){
+			fileWriter.append(newLine+"TD"+Integer.toString(i));
+			for (int j=1; j<=nbSemaines; j++){
+				fileWriter.append("\t"+Integer.toString(tabCohortes[j-1][i].mapElevesCohorte.size()));
+			}
+		}
+		fileWriter.close();
 	}
 }
