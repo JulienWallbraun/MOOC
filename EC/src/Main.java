@@ -21,18 +21,17 @@ public class Main {
 		EIXLS.ajouterDernierHWReussiELeves(10);
 		
 		//affichage
-		EIXLS.afficherMapEleves();
+//		EIXLS.afficherMapEleves();
 		
 		//rangement des élèves dans leur cohorte respective
 		EIXLS.rangerElevesInscritsDansCohortes();
 		
 		//affichage
+//		EIXLS.afficherDetailCohorte(5,6);
 //		EIXLS.afficherTabCohortes();
 		
 		//création du fichier TSV contenant les populations de chaque cohorte
 		EIXLS.creerCSV(path,"cohortes.tsv");
-		
-		EIXLS.tabCohortes[0][0].afficherCohorte();
 		
 	}
 

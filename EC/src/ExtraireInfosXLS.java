@@ -260,6 +260,10 @@ public class ExtraireInfosXLS {
 		}
 	}
 	
+	public void afficherDetailCohorte(int semaineInscription, int dernierHWReussi){
+		tabCohortes[semaineInscription-1][dernierHWReussi].afficherCohorte();
+	}
+	
 	public void creerCSV(String path, String name) throws IOException{
 		int nbSemaines = tabCohortes.length;
 		int nbMaxHWReussis = tabCohortes[0].length;
