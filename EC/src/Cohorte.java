@@ -10,5 +10,12 @@ public class Cohorte {
 		this.mapElevesCohorte = mapElevesCohorte;
 	}
 	
+	public void afficherCohorte(){
+		if (mapElevesCohorte != null && mapElevesCohorte.size()>0){
+			for (Eleve eleve : mapElevesCohorte.values()){
+				eleve.afficherDetailEleve();
+			}
+		}
+	}
 	
 }

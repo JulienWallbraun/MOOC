@@ -11,6 +11,7 @@ import jxl.read.biff.BiffException;
 public class ExtraireInfosXLS {
 	
 	int INDICE_COLONNE_LOGIN = 1;
+	int INDICE_COLONNE_EMAIL = 0;
 	int INDICE_LIGNE_PREMIER_ELEVE = 11;
 	int INDICE_COLONNE_PREMIER_HW = 4;
 	int INDICE_COLONNE_DERNIER_HW = 33;
@@ -108,20 +109,20 @@ public class ExtraireInfosXLS {
 		for (int semaine=1; semaine<derniereSemaineEtudiee; semaine++){
 			Sheet sheetSemaine = workbook.getSheet(semaine);
 			for (int j=INDICE_LIGNE_PREMIER_ELEVE; j<sheetSemaine.getColumn(INDICE_COLONNE_LOGIN ).length; j++){
-				String login = sheetSemaine.getCell(INDICE_COLONNE_LOGIN , j).getContents();				
+				String login = sheetSemaine.getCell(INDICE_COLONNE_LOGIN , j).getContents();
+				String email = sheetSemaine.getCell(INDICE_COLONNE_EMAIL, j).getContents();	
 				if (!mapElevesInscrits.containsKey(login)){
-//					System.out.println(login+" "+semaine);
-					mapElevesInscrits.put(login, new Eleve(login, semaine, -1));
+					mapElevesInscrits.put(login, new Eleve(login, email, semaine, -1));
 				}				
 			}
 		}
 		//cas particulier derniere semaine
 		Sheet sheetDerniereSemaine = workbook.getSheet(derniereSemaineEtudiee);
 		for (int j=INDICE_LIGNE_PREMIER_ELEVE; j<sheetDerniereSemaine.getColumn(derniereSemaineEtudiee).length; j++){
-			String login = sheetDerniereSemaine.getCell(INDICE_COLONNE_LOGIN+1, j).getContents();			
+			String login = sheetDerniereSemaine.getCell(INDICE_COLONNE_LOGIN+1, j).getContents();
+			String email = sheetDerniereSemaine.getCell(INDICE_COLONNE_EMAIL+1, j).getContents();	
 			if (!mapElevesInscrits.containsKey(login)){
-//				System.out.println(login+" "+derniereSemaineEtudiee);
-				mapElevesInscrits.put(login, new Eleve(login, derniereSemaineEtudiee, -1));
+				mapElevesInscrits.put(login, new Eleve(login, email, derniereSemaineEtudiee, -1));
 			}				
 		}
 	}
@@ -159,9 +160,10 @@ public class ExtraireInfosXLS {
 		Sheet sheetDerniereSemaine = listeSheets.get(derniereSemaineEtudiee);
 		for (int i=INDICE_LIGNE_PREMIER_ELEVE; i<sheetDerniereSemaine.getColumn(INDICE_COLONNE_LOGIN+1).length; i++){
 			String loginEleve = sheetDerniereSemaine.getCell(INDICE_COLONNE_LOGIN+1, i).getContents();
+			String emailEleve = sheetDerniereSemaine.getCell(INDICE_COLONNE_EMAIL+1, i).getContents();
 			if (mapElevesInscrits.get(loginEleve).dernierHWReussi == -1){
 				int dernierHWReussiParLEleve = dernierHWReussi(sheetDerniereSemaine, loginEleve, true);
-				mapElevesInscrits.put(loginEleve, new Eleve(loginEleve,mapElevesInscrits.get(loginEleve).semaineInscription,dernierHWReussiParLEleve));
+				mapElevesInscrits.put(loginEleve, new Eleve(loginEleve,emailEleve,mapElevesInscrits.get(loginEleve).semaineInscription,dernierHWReussiParLEleve));
 				nbElevesAvecDernierHWReussiTrouve++;
 //				System.out.println(mapElevesInscrits.get(loginEleve).login+" "+mapElevesInscrits.get(loginEleve).semaineInscription+" "+mapElevesInscrits.get(loginEleve).dernierHWReussi);
 			}
@@ -172,10 +174,11 @@ public class ExtraireInfosXLS {
 			Sheet sheetSemaine = listeSheets.get(semaine);
 			for (int i=INDICE_LIGNE_PREMIER_ELEVE; i<sheetSemaine.getColumn(INDICE_COLONNE_LOGIN).length; i++){
 				String loginEleve = sheetSemaine.getCell(INDICE_COLONNE_LOGIN, i).getContents();
+				String emailEleve = sheetSemaine.getCell(INDICE_COLONNE_EMAIL, i).getContents();
 				if (mapElevesInscrits.get(loginEleve).dernierHWReussi == -1){
 					int dernierHWReussiParLEleve = dernierHWReussi(sheetSemaine, loginEleve, false);
 //					System.out.println("SSSSS "+semaine+" " +loginEleve+ " "+dernierHWReussiParLEleve);
-					mapElevesInscrits.put(loginEleve, new Eleve(loginEleve,mapElevesInscrits.get(loginEleve).semaineInscription,dernierHWReussiParLEleve));
+					mapElevesInscrits.put(loginEleve, new Eleve(loginEleve,emailEleve,mapElevesInscrits.get(loginEleve).semaineInscription,dernierHWReussiParLEleve));
 					nbElevesAvecDernierHWReussiTrouve++;
 				}
 			}
@@ -187,7 +190,7 @@ public class ExtraireInfosXLS {
 		System.out.println("détail de mapElevesInscrits (login, semaine d'inscription, dernier HW réussi");
 		if (!mapElevesInscrits.isEmpty()){
 			for (Eleve eleve : mapElevesInscrits.values()){
-				System.out.println(eleve.login+" "+eleve.semaineInscription+" "+eleve.dernierHWReussi);
+				System.out.println(eleve.login+" "+eleve.email+" "+eleve.semaineInscription+" "+eleve.dernierHWReussi);
 			}
 		}
 	}
