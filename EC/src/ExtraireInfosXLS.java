@@ -1,14 +1,13 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-
-import com.google.gson.Gson;
 
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
+
+import com.google.gson.Gson;
 
 public class ExtraireInfosXLS {
 	
