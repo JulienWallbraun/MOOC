@@ -4,31 +4,35 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.google.gson.Gson;
+
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
 public class ExtraireInfosXLS {
 	
+	//paramètres du classeur excel à renseigner
 	int INDICE_COLONNE_LOGIN = 1;
 	int INDICE_COLONNE_EMAIL = 0;
 	int INDICE_LIGNE_PREMIER_ELEVE = 11;
 	int INDICE_COLONNE_PREMIER_HW = 4;
 	int INDICE_COLONNE_DERNIER_HW = 33;
 	
-	ArrayList<Sheet> listeSheets = new ArrayList<Sheet>();
 	Workbook workbook;
 	HashMap<String, Eleve> mapElevesInscrits = new HashMap<String, Eleve>();
 	Cohorte[][] tabCohortes;
 
 	public ExtraireInfosXLS(File file) throws BiffException, IOException {
 		super();
-		this.workbook = Workbook.getWorkbook(file);
-		for (int i=0; i<workbook.getNumberOfSheets(); i++){
-			listeSheets.add(workbook.getSheet(i));
-		}		
+		this.workbook = Workbook.getWorkbook(file);	
 	}
 	
+	/**détermine si une note donnée en paramètre sous la forme d'une string est supérieure ou égale à la moyenne
+	 * 
+	 * @param note
+	 * @return true si la note est supérieure ou égale à 0,5, false sinon
+	 */
 	public boolean noteSuperieureALaMoyenne(String note){
 		if (note.equals("1")) return true;
 		else if (note.equals("0")) return false;
@@ -38,71 +42,12 @@ public class ExtraireInfosXLS {
 			else return false;
 		}		
 	}
-	
-	public int dernierHWReussiparEleve(int numLigneEleve, Sheet sheet, int dernierHW) throws BiffException, IOException{
-		boolean homeworkReussi = false;
-		int dernierHWReussi = 0;
-		while (dernierHW>0 && !homeworkReussi){
-			String note = sheet.getCell(dernierHW+3, numLigneEleve-1).getContents();
-			if (noteSuperieureALaMoyenne(note)) {
-				homeworkReussi = true;
-				dernierHWReussi = dernierHW;
-			}
-			dernierHW--;
-		}
-		return dernierHWReussi;
-	}
-	
-	public HashMap<String, Integer> dernierHWReussiPourEnsembleEleves(int numLignePremierEleve, int numLigneDernierEleve, Sheet sheet, int dernierHW) throws BiffException, IOException{
-		HashMap<String, Integer> mapDernierHWReussisParLesEleves = new HashMap<String, Integer>();
-		for (int i=numLignePremierEleve; i<=numLigneDernierEleve; i++){
-			mapDernierHWReussisParLesEleves.put(sheet.getCell(2, i-1).getContents(), dernierHWReussiparEleve(i, sheet, dernierHW));
-		}
-		return mapDernierHWReussisParLesEleves;
-	}
-	
-	public int semaineInscriptionParEleve(int numLigneEleve, int derniereSemaine) throws BiffException, IOException{
-		boolean semaineInscriptionTrouve = false;
-		int semaine = 1;
-		while (semaine<=derniereSemaine && !semaineInscriptionTrouve){
-			Sheet sheet = workbook.getSheet(semaine);
-			if (!sheet.getCell(0, numLigneEleve-1).getContents().isEmpty() && sheet.getCell(0, numLigneEleve-1).getContents()!=null){
-				semaineInscriptionTrouve = true;
-			}
-			else {
-				semaine++;
-			}
-		}
-		return semaine;
-	}
-	
-	public boolean eleveInscritSemaine(String nomEleve, int numSemaine){
-		boolean trouve = false;
-		Sheet sheetSemaine = workbook.getSheet(numSemaine);
-		int i=0;
-		while (i<sheetSemaine.getColumn(INDICE_COLONNE_LOGIN).length && !trouve){
-			if (sheetSemaine.getCell(numSemaine, i).getContents().equals(nomEleve)){
-				trouve = true;
-			}
-			i++;
-		}
-		return trouve;
-	}
-	
-	public int semaineInscriptionEleve(String nomEleve, int derniereSemaineObservee){
-		int semaine = 1;
-		boolean trouveSemaineInscription = false;
-		while (!trouveSemaineInscription && semaine<derniereSemaineObservee){
-			if (eleveInscritSemaine(nomEleve, semaine)){
-				trouveSemaineInscription = true;
-			}
-			else{
-				semaine++;
-			}
-		}
-		return semaine;
-	}
 
+	/**
+	 * ajoute les élèves s'étant inscrits au MOOC dans mapElvesInscrits avec leur date d'inscrition en parcourant les semaines une à une jusqu'à la dernière semaine
+	 * le derb=nier devoir réussi par les élèves est initialisé à -1
+	 * @param derniereSemaineEtudiee
+	 */
 	public void ajouterEleves(int derniereSemaineEtudiee){
 		mapElevesInscrits = new HashMap<String, Eleve>();
 		//cas semaines normales
@@ -127,6 +72,13 @@ public class ExtraireInfosXLS {
 		}
 	}
 
+	/**
+	 * retourne, pour un élève et une semaine donnée, son dernier devoir réussi au moment de la semaine en cours
+	 * @param sheet
+	 * @param login
+	 * @param derniereSemaineEtudiee
+	 * @return
+	 */
 	public int dernierHWReussi(Sheet sheet, String login, boolean derniereSemaineEtudiee){
 		//cas normal
 		int indiceColonneLogin = INDICE_COLONNE_LOGIN;
@@ -152,12 +104,16 @@ public class ExtraireInfosXLS {
 		return dernierHWReussi;
 	}
 	
+	/**
+	 * renseigne dans mapElevesInscrits le dernier devoir réussi par les élèves présents dans la liste des élèves inscrits
+	 * @param derniereSemaineEtudiee
+	 */
 	public void ajouterDernierHWReussiELeves(int derniereSemaineEtudiee){
 		int semaine = derniereSemaineEtudiee;
 		int nbElevesAvecDernierHWReussiTrouve = 0;
 		
 		//cas derniere semaine
-		Sheet sheetDerniereSemaine = listeSheets.get(derniereSemaineEtudiee);
+		Sheet sheetDerniereSemaine = workbook.getSheet(derniereSemaineEtudiee);
 		for (int i=INDICE_LIGNE_PREMIER_ELEVE; i<sheetDerniereSemaine.getColumn(INDICE_COLONNE_LOGIN+1).length; i++){
 			String loginEleve = sheetDerniereSemaine.getCell(INDICE_COLONNE_LOGIN+1, i).getContents();
 			String emailEleve = sheetDerniereSemaine.getCell(INDICE_COLONNE_EMAIL+1, i).getContents();
@@ -171,7 +127,7 @@ public class ExtraireInfosXLS {
 		semaine--;
 		//cas semaines normales
 		while(semaine>=1 && nbElevesAvecDernierHWReussiTrouve<=mapElevesInscrits.size()){
-			Sheet sheetSemaine = listeSheets.get(semaine);
+			Sheet sheetSemaine = workbook.getSheet(semaine);
 			for (int i=INDICE_LIGNE_PREMIER_ELEVE; i<sheetSemaine.getColumn(INDICE_COLONNE_LOGIN).length; i++){
 				String loginEleve = sheetSemaine.getCell(INDICE_COLONNE_LOGIN, i).getContents();
 				String emailEleve = sheetSemaine.getCell(INDICE_COLONNE_EMAIL, i).getContents();
@@ -195,26 +151,12 @@ public class ExtraireInfosXLS {
 		}
 	}
 	
-	public HashMap<String, Eleve> mapElevesInscritsSemaine(int numSemaine){
-		HashMap<String, Eleve> mapElevesInscritsSemaine = new HashMap<String, Eleve>();
-		for (Eleve eleve : mapElevesInscrits.values()){
-			if (eleve.semaineInscription == numSemaine){
-				mapElevesInscritsSemaine.put(eleve.login, eleve);
-			}
-		}
-		return mapElevesInscritsSemaine;
-	}
-	
-	public HashMap<String, Eleve> mapElevesDernierHWReussi(int dernieHWReussi){
-		HashMap<String, Eleve> mapElevesDernierHWReussi = new HashMap<String, Eleve>();
-		for (Eleve eleve : mapElevesInscrits.values()){
-			if (eleve.dernierHWReussi == dernieHWReussi){
-				mapElevesDernierHWReussi.put(eleve.login, eleve);
-			}
-		}
-		return mapElevesDernierHWReussi;
-	}
-	
+	/**
+	 * retourne la cohorte correspondant à la semaine d'inscription et au dernier TD donné en paramètre
+	 * @param numSemaine
+	 * @param dernieHWReussi
+	 * @return
+	 */
 	public Cohorte cohorte(int numSemaine, int dernieHWReussi){
 		Cohorte cohorte = new Cohorte(new HashMap<String, Eleve>());
 		for (Eleve eleve : mapElevesInscrits.values()){
@@ -228,6 +170,9 @@ public class ExtraireInfosXLS {
 		return cohorte;
 	}
 	
+	/**
+	 * range les élèves contenus dans mapElevesInscrits dans la cohorte correspondante dans le tableau tabCohortes
+	 */
 	public void rangerElevesInscritsDansCohortes(){
 		if (!mapElevesInscrits.isEmpty()){
 			//on détermine les dimensions du tableau
@@ -264,6 +209,12 @@ public class ExtraireInfosXLS {
 		tabCohortes[semaineInscription-1][dernierHWReussi].afficherCohorte();
 	}
 	
+	/**
+	 * créée un fichier CSV contenant les effectifs de chaque cohorte
+	 * @param path
+	 * @param name
+	 * @throws IOException
+	 */
 	public void creerCSV(String path, String name) throws IOException{
 		int nbSemaines = tabCohortes.length;
 		int nbMaxHWReussis = tabCohortes[0].length;
@@ -274,13 +225,39 @@ public class ExtraireInfosXLS {
 		for (int i=1; i<=nbSemaines; i++){
 			fileWriter.append("\t"+"Semaine"+Integer.toString(i));
 		}		
-		//création autres lignes (données)
-		for (int i=0; i< nbMaxHWReussis; i++){
+		//création ligne cohortes n'ayant réussi aucun HW
+		fileWriter.append(newLine+"aucun");
+		for (int i=1; i<=nbSemaines; i++){
+			fileWriter.append("\t"+Integer.toString(tabCohortes[i-1][0].mapElevesCohorte.size()));
+		}
+		//création ligne somme cohortes ayant réussi au moins 1 HW
+		fileWriter.append(newLine+"autres");
+		for (int j=1; j<=nbSemaines; j++){
+			int nbEleves = 0;
+			for (int i=1; i< nbMaxHWReussis; i++){
+				nbEleves = nbEleves + tabCohortes[j-1][i].mapElevesCohorte.size();
+			}
+			fileWriter.append("\t"+Integer.toString(nbEleves));
+		}
+		//création autres lignes (données)		
+		for (int i=1; i< nbMaxHWReussis; i++){
 			fileWriter.append(newLine+"TD"+Integer.toString(i));
 			for (int j=1; j<=nbSemaines; j++){
 				fileWriter.append("\t"+Integer.toString(tabCohortes[j-1][i].mapElevesCohorte.size()));
 			}
 		}
+		fileWriter.close();
+	}
+	
+	/**
+	 * créée un fichier JSON repertoriant tous les élèves s'étant inscrits au MOOC, avec leur login, leur email, leur semaine d'inscription et leur dernier devoir réussi
+	 * @param path
+	 * @param name
+	 * @throws IOException
+	 */
+	public void creerJSON(String path, String name) throws IOException{
+		FileWriter fileWriter = new FileWriter(path+File.separator+name);
+		fileWriter.append(new Gson().toJson(mapElevesInscrits));
 		fileWriter.close();
 	}
 }

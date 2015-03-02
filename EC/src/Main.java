@@ -21,7 +21,7 @@ public class Main {
 		EIXLS.ajouterDernierHWReussiELeves(10);
 		
 		//affichage
-//		EIXLS.afficherMapEleves();
+		EIXLS.afficherMapEleves();
 		
 		//rangement des élèves dans leur cohorte respective
 		EIXLS.rangerElevesInscritsDansCohortes();
@@ -32,6 +32,9 @@ public class Main {
 		
 		//création du fichier TSV contenant les populations de chaque cohorte
 		EIXLS.creerCSV(path,"cohortes.tsv");
+		
+		//création du fichier JSON contenant les détails de chaque élève
+		EIXLS.creerJSON(path, "cohortes.json");
 		
 	}
 
